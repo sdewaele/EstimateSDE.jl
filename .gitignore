@@ -1,0 +1,17 @@
+*.jl.cov
+*.jl.*.cov
+*.jl.mem
+deps/deps.jl
+*.lyx~
+*.lyx#
+results/
+stan/cache/
+stan/tmp
+.vscode/
+.~*#
+magweg.jl
+sys_sde_packages.so
+doc/continuous_discrete_bayesian_filtering_linear.pdf
+Manifest.toml
+sysimage/JuliaSysimage.so
+*.eps

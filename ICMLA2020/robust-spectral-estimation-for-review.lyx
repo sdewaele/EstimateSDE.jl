@@ -1,0 +1,2706 @@
+#LyX 2.3 created this file. For more info see http://www.lyx.org/
+\lyxformat 544
+\begin_document
+\begin_header
+\save_transient_properties true
+\origin unavailable
+\textclass IEEEtran
+\begin_preamble
+% for subfigures/subtables
+\usepackage[caption=false,font=footnotesize]{subfig}
+\usepackage{pgfplots}
+\end_preamble
+\options conference
+\use_default_options false
+\maintain_unincluded_children false
+\language english
+\language_package none
+\inputencoding auto
+\fontencoding global
+\font_roman "default" "default"
+\font_sans "default" "default"
+\font_typewriter "default" "default"
+\font_math "auto" "auto"
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100 100
+\font_tt_scale 100 100
+\use_microtype false
+\use_dash_ligatures false
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command bibtex
+\index_command default
+\float_placement tbh
+\paperfontsize default
+\spacing single
+\use_hyperref true
+\pdf_title "Estimation of higher order SDEs"
+\pdf_author "Stijn de Waele"
+\pdf_bookmarks true
+\pdf_bookmarksnumbered true
+\pdf_bookmarksopen true
+\pdf_bookmarksopenlevel 1
+\pdf_breaklinks false
+\pdf_pdfborder true
+\pdf_colorlinks false
+\pdf_backref false
+\pdf_pdfusetitle false
+\pdf_quoted_options "pdfpagelayout=OneColumn, pdfnewwindow=true, pdfstartview=XYZ, plainpages=false"
+\papersize default
+\use_geometry false
+\use_package amsmath 1
+\use_package amssymb 1
+\use_package cancel 1
+\use_package esint 1
+\use_package mathdots 1
+\use_package mathtools 1
+\use_package mhchem 1
+\use_package stackrel 1
+\use_package stmaryrd 1
+\use_package undertilde 1
+\cite_engine basic
+\cite_engine_type default
+\biblio_style plain
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\justification true
+\use_refstyle 0
+\use_minted 0
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\paragraph_indentation default
+\is_math_indent 0
+\math_numbering_side default
+\quotes_style english
+\dynamic_quotes 0
+\papercolumns 2
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Title
+Accurate Characterization of Non-Uniformly Sampled Time Series using Stochastic
+ Differential Equations 
+\end_layout
+
+\begin_layout Author
+\begin_inset Flex Author Name
+status open
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset Flex Author Affiliation
+status open
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Abstract
+Non-uniform sampling arises when an experimenter does not have full control
+ over the sampling characteristics of the process under investigation.
+ Moreover, it is introduced intentionally in algorithms such as Bayesian
+ optimization and compressive sensing.
+ We argue that Stochastic Differential Equations (SDEs) are especially well-suit
+ed for characterizing second order moments of such time series.
+ We introduce new initial estimates for the numerical optimization of the
+ likelihood, based on incremental estimation and initialization from autoregress
+ive models.
+ Furthermore, we introduce model truncation as a purely data-driven method
+ to reduce the order of the estimated model based on the SDE likelihood.
+ We show the increased accuracy achieved with the new estimator in simulation
+ experiments, covering all challenging circumstances that may be encountered
+ in characterizing a non-uniformly sampled time series.
+ Finally, we apply the new estimator to experimental rainfall variability
+ data.
+\end_layout
+
+\begin_layout Peer Review Title
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+Don't add text here!
+\end_layout
+
+\end_inset
+
+
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+required if you use the document class option 
+\family sans
+peerreview
+\family default
+, must otherwise not be used
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Introduction
+\end_layout
+
+\begin_layout Standard
+Non-uniformly sampled time series are found in a wide range of applications.
+ They typically occur when the experimenter has limited control over signal
+ sampling.
+ Sampling times may be determined by a natural process, for example in turbulent
+ flow characterization using laser-Doppler anemometry 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "damaschke2018ldaspectra"
+literal "false"
+
+\end_inset
+
+, analysis of climate time series 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "thirumalai2020climate"
+literal "false"
+
+\end_inset
+
+ and astronomy 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "khan2017exoplanets"
+literal "false"
+
+\end_inset
+
+.
+ Alternatively, non-uniform sampling can occur because of an irregular human
+ sampling, e.g.
+ in power systems sensor data 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "stankovic2017power"
+literal "false"
+
+\end_inset
+
+, oil production surveillance 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "tewari201production"
+literal "false"
+
+\end_inset
+
+ and vital signs measurements in medical applications 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "tan2020medical,barbieri2020icureadmission"
+literal "false"
+
+\end_inset
+
+.
+ Finally, non-uniform sampling is a key attribute of certain algorithms,
+ including Bayesian optimization 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "ghahramani2015bayesianopt"
+literal "false"
+
+\end_inset
+
+ and compressive sensing 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "turunctur2019compressive"
+literal "false"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+It has been shown theoretically that alias-free spectral estimates can be
+ obtained using non-uniform sampling
+\begin_inset CommandInset citation
+LatexCommand cite
+key "shapiro1960aliasfree"
+literal "false"
+
+\end_inset
+
+.
+ As most theoretical results, this result is asymptotic, i.e., it holds in
+ the limit where the number of observations 
+\begin_inset Formula $N$
+\end_inset
+
+ tends to infinity.
+ The result can easily be understood intuitively, as follows: As a signal
+ is sampled at random times for a long enough time, any desired number of
+ observations is a available at an arbitrarily low sampling interval.
+ Hence, the spectrum can be estimated alias-free up to an arbitrary high
+ frequency.
+ Following the same intuition, it is clear that this asymptotic result breaks
+ down for finite 
+\begin_inset Formula $N$
+\end_inset
+
+, because the shortest time interval will be finite in that case.
+\end_layout
+
+\begin_layout Standard
+The objective of this work is to accurately characterize the second order
+ moments of a non-uniformly sampled stationary stochastic process, which
+ can be expressed in terms of the power spectral density in the frequency
+ domain.
+ Given the close correspondence between the error in the log power spectrum
+ and the Kullback-Leibler discrepancy 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "broersen2006automatic"
+literal "false"
+
+\end_inset
+
+, we will use 
+\begin_inset Quotes eld
+\end_inset
+
+spectral estimation
+\begin_inset Quotes erd
+\end_inset
+
+ as a shorthand for the aforementioned objective.
+ In the time domain, the second order moments are expressed using the covariance
+ function, or, equivalently, the kernel of a Gaussian processes 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "rasmussen2003gaussian"
+literal "false"
+
+\end_inset
+
+.
+ 
+\end_layout
+
+\begin_layout Standard
+Existing approaches include non-parametric methods, such as the Lomb-Scargle
+ spectral estimate 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "springford2020lombscargle"
+literal "false"
+
+\end_inset
+
+, and the slotting technique for estimation of the covariance function 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "rehfeld2011comparison"
+literal "false"
+
+\end_inset
+
+.
+ Parametric techniques include discrete-time autoregressive models 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "broersen2007beyondrate"
+literal "false"
+
+\end_inset
+
+ and stochastic differential equations with random initial estimates 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "kelly2014astronomy"
+literal "false"
+
+\end_inset
+
+.
+ While parametric techniques show the most promising results, previous work
+ also report inaccurate spectral spectral estimates at higher frequencies
+ for higher-order models, and sensitivity to initial conditions of the maximum
+ likelihood (ML) fitting procedure 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "jones1984sensitive-init,broersen2006sensitive-init"
+literal "false"
+
+\end_inset
+
+, which limit the practical use of these algorithms.
+\end_layout
+
+\begin_layout Standard
+Our main contribution is to propose a new algorithm for spectral estimation
+ using Stochastic Differential Equations (SDEs) based on incremental parameter
+ estimation and data-driven model truncation, that has been validated in
+ simulation experiments.
+ We explain how model truncation in SDEs results greater accuracy than discrete-
+time models through analyzing the SDE(1) case.
+ For the problem of spectral estimation from non-uniformly sampled time
+ series, asymptotic theory provides a poor description of actual behavior.
+ Hence, simulation experiments are indispensable to establish the accuracy
+ of an estimator, and are therefore a key component of this paper.
+\end_layout
+
+\begin_layout Standard
+In section 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sec:SDE-motivation"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+, we motivate the usage of SDEs for spectral estimation and provide a number
+ of basic definitions and results.
+ Section 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sec:MLE"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ describes the new SDE parameter estimation procedure.
+ Section 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sec:simulations"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ contains the design of the simulation experiments, which is used in section
+ 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sec:truncation"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ to quantify the error reduction achieved through model truncation, and
+ in section 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sec:performance"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ for the overall evaluation of the proposed estimator.
+ Finally, we apply the estimator to experimental rainfall variability data
+ in section 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sec:rainfall"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Section
+\begin_inset CommandInset label
+LatexCommand label
+name "sec:SDE-motivation"
+
+\end_inset
+
+Stochastic Differential Equations: Motivation and definitions
+\end_layout
+
+\begin_layout Standard
+We use stochastic differential equations (SDEs) to estimate the power spectral
+ density of a time series.
+ We motivate this choice over available alternatives as follows:
+\end_layout
+
+\begin_layout Itemize
+By using 
+\emph on
+a parametric model 
+\emph default
+we can formulate of a maximum likelihood (ML) estimator.
+ Unlike many non-parametric estimators, ML estimators have desirable theoretical
+ properties such as asymptotic efficiency.
+ Parametric spectral estimators have been most successful at achieving the
+ benefit of high-frequency spectra in finite samples 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "broersen2007beyondrate"
+literal "false"
+
+\end_inset
+
+, whereas non-parametric methods such as the Lomb-Scargle estimator 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "springford2020lombscargle"
+literal "false"
+
+\end_inset
+
+ have very high variance, which mostly limits their use to finding a single
+ peak in the spectrum under high signal-to-noise conditions.
+ Similarly, in the time domain, correlation estimated with the non-parametric
+ slotting technique violate the positive-definiteness property that is required
+ for a valid autocorrelation function 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "rehfeld2011comparison"
+literal "false"
+
+\end_inset
+
+.
+ Parametric models can achieve the same flexibility as non-parametric estimates
+ by increasing the model order.
+\end_layout
+
+\begin_layout Itemize
+The SDE model is a 
+\emph on
+continuous time
+\emph default
+ model, which can operate directly on non-uniform samples without the need
+ to introduce a regular grid as is required for discrete-time estimates.
+ Moreover, estimated discrete time time series models may have poles that
+ do not have a continuous-time counterpart 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "soderstrom1991contarma"
+literal "false"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+The stochastic differential equation of order 
+\begin_inset Formula $p$
+\end_inset
+
+ for the process 
+\begin_inset Formula $y$
+\end_inset
+
+ as a function of time 
+\begin_inset Formula $t$
+\end_inset
+
+ is given by:
+\begin_inset Formula 
+\begin{equation}
+\frac{d^{p}y}{dt^{p}}+\sum_{i=1}^{p}a_{i}\frac{d^{i-1}y}{dt}=\epsilon\label{eq:sde}
+\end{equation}
+
+\end_inset
+
+where 
+\begin_inset Formula $a_{i}$
+\end_inset
+
+ are the SDE coefficients, collectively denoted 
+\begin_inset Formula $\mathbf{a}$
+\end_inset
+
+, and 
+\begin_inset Formula $\epsilon$
+\end_inset
+
+ is continuous Gaussian white noise with standard deviation 
+\begin_inset Formula $\sigma_{\epsilon}$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+The SDE model can be rewritten as an equivalent state-space model:
+\begin_inset Formula 
+\begin{align}
+\text{\ensuremath{\frac{d\mathbb{\mathbf{z}}}{dt}}} & =\mathbf{A}\mathbf{z}+\mathbf{\epsilon}\label{eq:state-space}\\
+y & =C\text{\ensuremath{\mathbf{z}}}\nonumber 
+\end{align}
+
+\end_inset
+
+where the state 
+\begin_inset Formula $\mathbf{z}$
+\end_inset
+
+ and 
+\begin_inset Formula $\mathbb{\epsilon}$
+\end_inset
+
+ are 
+\begin_inset Formula $p$
+\end_inset
+
+-dimensional time series and 
+\begin_inset Formula $C\mathbf{z}=z_{1}$
+\end_inset
+
+.
+ The matrix 
+\begin_inset Formula $\mathbf{A}$
+\end_inset
+
+ and the covariance matrix 
+\begin_inset Formula $\mathbf{Q}$
+\end_inset
+
+ of 
+\begin_inset Formula $\mathbb{\epsilon}$
+\end_inset
+
+ can be computed from 
+\begin_inset Formula $\left\{ \mathbf{a},\sigma_{\epsilon}\right\} $
+\end_inset
+
+, see 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "jones1981fitcar"
+literal "false"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+The SDE process has a power spectral density given by 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "sarkka2019sde"
+literal "false"
+
+\end_inset
+
+: 
+\begin_inset Formula 
+\[
+h_{y}\left(f\right)=\mathbf{C}\left(\mathbf{A}-i2\pi f\mathbf{I}\right)^{-1}\mathbf{Q}\left(\mathbf{A}+i2\pi f\mathbf{I}\right)^{-T}\mathbf{C}^{T}
+\]
+
+\end_inset
+
+and the covariance function at lag 
+\begin_inset Formula $\tau>0$
+\end_inset
+
+ of:
+\begin_inset Formula 
+\begin{equation}
+R\left(\tau\right)=\mathbf{\mathbf{P}}_{s}\exp\left(\mathbf{A}t\right)^{T}\label{eq:autocov}
+\end{equation}
+
+\end_inset
+
+where 
+\begin_inset Formula $\mathbf{\mathbf{P}}_{s}$
+\end_inset
+
+ is the stationary covariance matrix.
+\end_layout
+
+\begin_layout Standard
+The state space equation may be diagonalized to represent the SDE as:
+\begin_inset Formula 
+\begin{align*}
+\text{\ensuremath{\frac{d\mathbb{\mathbf{z}}'}{dt}}} & =\Lambda\mathbb{\mathbf{z}}'+\mathbf{\epsilon'}\\
+y= & C'\text{\ensuremath{\mathbf{z}}}'
+\end{align*}
+
+\end_inset
+
+where the eigenvalues are equal to the the roots 
+\begin_inset Formula $r_{i}$
+\end_inset
+
+ (collectively denoted 
+\begin_inset Formula $\mathbf{r}$
+\end_inset
+
+) of the characteristic equation of (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:sde"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+) for 
+\begin_inset Formula $\epsilon=0$
+\end_inset
+
+, and 
+\begin_inset Formula $C'\text{\ensuremath{\mathbf{z}}}'=\sum z'_{i}$
+\end_inset
+
+.
+ We refer to this parameterization as the 
+\series bold
+roots parameterization
+\series default
+, while we refer to the 
+\begin_inset Formula $\left\{ \mathbf{a},\sigma_{\epsilon}\right\} $
+\end_inset
+
+ parameterization as the 
+\series bold
+coefficients
+\series default
+ 
+\series bold
+parameterization
+\series default
+.
+ 
+\end_layout
+
+\begin_layout Standard
+The key advantage of the roots parameterization is that stationarity can
+ be expressed as the requirement that the real part of the roots is negative
+ : 
+\begin_inset Formula $\textrm{Re}\left(r_{i}\right)<0$
+\end_inset
+
+.
+ Furthermore, the computational complexity of the likelihood computation
+ is more efficient for large model order 
+\begin_inset Formula $p$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+Despite the advantages, many researchers use the coefficient representation.
+ This may be motivated by the reduced computational complexity for lower-order
+ models.
+ In addition, SDEs can be used to parameterize a kernel as part of a larger
+ machine learning model, e.g.
+ in deep learning models 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "chen2018neuralode"
+literal "false"
+
+\end_inset
+
+ or for posterior sampling using a probabilistic program 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "carpenter2017stan"
+literal "false"
+
+\end_inset
+
+.
+ Currently many major automatic differentiation packages such as PyTorch
+ 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "paszke2017pytorch-autodiff"
+literal "false"
+
+\end_inset
+
+ and the Stan autodiff library 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "carpenter2015stan-autodiff"
+literal "false"
+
+\end_inset
+
+ do not support complex-valued parameters, therefore necessitating the use
+ of the coefficient representation.
+ Therefore, we consider both representations in this work.
+\end_layout
+
+\begin_layout Section
+\begin_inset CommandInset label
+LatexCommand label
+name "sec:MLE"
+
+\end_inset
+
+Maximum likelihood estimation
+\end_layout
+
+\begin_layout Subsection
+Likelihood computation
+\end_layout
+
+\begin_layout Standard
+The exact log likelihood 
+\begin_inset Formula $L$
+\end_inset
+
+ is computed recursively using the Kalman filtering equations.
+ Process stationarity is exploited for the first observation, i.e., it has
+ the stationary covariance matrix 
+\begin_inset Formula $\mathbf{P}_{s}$
+\end_inset
+
+.
+ Given a value for the SDE parameters 
+\begin_inset Formula $\mathbf{a}$
+\end_inset
+
+ or 
+\begin_inset Formula $\mathbf{r}$
+\end_inset
+
+, the analytical expression for the Maximum Likelihood standard deviation
+ 
+\begin_inset Formula $\sigma_{\epsilon}$
+\end_inset
+
+ is used 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "jones1981fitcar"
+literal "false"
+
+\end_inset
+
+.
+ For unstable models, or errors due to the finite machine precision, a log
+ likelihood of 
+\begin_inset Formula $L=-\infty$
+\end_inset
+
+ is produced.
+\end_layout
+
+\begin_layout Standard
+The computation largely follows cited algorithms, with the following improvement
+s to increase computational efficiency:
+\end_layout
+
+\begin_layout Enumerate
+For the coefficient representation, we follow 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "sarkka2019sde"
+literal "false"
+
+\end_inset
+
+ for the measurement and likelihood
+\series bold
+ 
+\series default
+steps.
+ The prediction step computes the conditional mean 
+\begin_inset Formula $\mathbf{\mu}_{n|n-1}$
+\end_inset
+
+ and covariance matrix 
+\begin_inset Formula $\mathbf{P}_{n|n-1}$
+\end_inset
+
+ of the state 
+\begin_inset Formula $\mathbf{z}_{n}$
+\end_inset
+
+:
+\begin_inset Formula 
+\begin{eqnarray*}
+\mathbf{\mu}_{n|n-1} & = & \mathbf{F}\mathbf{\mu}_{n-1}\\
+\mathbf{P}_{n|n-1} & = & \mathbf{F}\mathbf{P}_{n-1}\mathbf{F}^{T}+\int_{\tau=0}^{\Delta t}\exp(\mathbf{A}\tau)\mathbf{Q}\exp(\mathbf{A}\tau)^{T}d\tau
+\end{eqnarray*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+where 
+\begin_inset Formula $\mathbf{F}=\exp\left(\mathbf{A}t\right)$
+\end_inset
+
+.
+ To compute the integral, instead of using the Matrix Fraction Decomposition
+ proposed in 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "sarkka2019sde"
+literal "false"
+
+\end_inset
+
+, we eliminate the covariance matrix 
+\family roman
+\series medium
+\shape up
+\size normal
+\emph off
+\bar no
+\strikeout off
+\xout off
+\uuline off
+\uwave off
+\noun off
+\color none
+
+\begin_inset Formula $\mathbf{Q}$
+\end_inset
+
+
+\family default
+\series default
+\shape default
+\size default
+\emph default
+\bar default
+\strikeout default
+\xout default
+\uuline default
+\uwave default
+\noun default
+\color inherit
+ to yield:
+\begin_inset Formula 
+\begin{align*}
+\mathbf{P}_{n|n-1} & =\mathbf{P}_{s}-\mathbf{F}(\mathbf{P}_{s}-\mathbf{P}_{n-1})\mathbf{F}^{T}
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+[2]
+\end_layout
+
+\end_inset
+
+ For the root representation, we use the algorithm in 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "jones1981fitcar"
+literal "false"
+
+\end_inset
+
+, with the following alternative computation for the stationary covariance
+ matrix 
+\begin_inset Formula $\mathbf{P}'_{s}$
+\end_inset
+
+:
+\begin_inset Formula 
+\[
+\left[\mathbf{P}'_{s}\right]_{ij}=-\frac{\left[\mathbf{Q}'_{s}\right]_{ij}}{\left(r_{i}+\bar{r_{j}}\right)},
+\]
+
+\end_inset
+
+which is a corollary of eq.
+ 30 in 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "jones1981fitcar"
+literal "false"
+
+\end_inset
+
+ for 
+\begin_inset Formula $t_{k}-t_{k-1}\rightarrow\infty$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+Given the extensive literature on Kalman filtering, these improvements may
+ have been previously reported in the literature.
+ We still report them here to accurately represent to algorithms used in
+ this work.
+\end_layout
+
+\begin_layout Subsection
+Optimization
+\end_layout
+
+\begin_layout Standard
+Optimization of the likelihood is performed using the Limited-Memory BFGS
+ algorithm 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "nocedal2006optimization"
+literal "false"
+
+\end_inset
+
+, with derivatives obtained through automatic differentiation.
+ For the coefficient representation, a necessary condition for stability
+ is that all coefficients 
+\begin_inset Formula $a_{i}$
+\end_inset
+
+ are positive; it is also sufficient for 
+\begin_inset Formula $p\le2$
+\end_inset
+
+ 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "mattuck2011diffeq-stability"
+literal "false"
+
+\end_inset
+
+.
+ To improve optimization results, parameter values are constrained to a
+ configurable interval: 
+\begin_inset Formula $a_{i}\in\left\langle a_{l},a_{h}\right\rangle $
+\end_inset
+
+.
+ Wide limits should be set to allow for a wide range of models.
+ As an indication, 
+\begin_inset Formula $a_{l}$
+\end_inset
+
+ is related to the duration 
+\begin_inset Formula $D$
+\end_inset
+
+ of the time series 
+\begin_inset Formula $a_{l}\lesssim1/D$
+\end_inset
+
+, and 
+\begin_inset Formula $a_{h}$
+\end_inset
+
+ is related to the shortest sampling interval 
+\begin_inset Formula $\Delta t_{m}$
+\end_inset
+
+, 
+\begin_inset Formula $a_{h}\gtrsim1/\Delta t_{m}$
+\end_inset
+
+.
+ In the presented simulation results, we use 
+\begin_inset Formula $a_{i}\in\left\langle 10^{-3},10^{3}\right\rangle $
+\end_inset
+
+.
+ In the roots representation, the real and imaginary part of the roots are
+ similarly constrained.
+\end_layout
+
+\begin_layout Subsection
+Initialization
+\begin_inset CommandInset label
+LatexCommand label
+name "subsec:Initialization"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Accurate initialization of the optimization is key to achieving high-quality
+ estimates.
+ The sensitivity of SDE parameter estimation to initial conditions has been
+ acknowledged in the literature 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "jones1984sensitive-init"
+literal "false"
+
+\end_inset
+
+, in particular for higher-order models 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "broersen2006sensitive-init"
+literal "false"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+The first element in the algorithm is 
+\series bold
+incremental estimation
+\series default
+: The estimate for the SDE(
+\begin_inset Formula $p$
+\end_inset
+
+) model is initiated from a lower order SDE(
+\begin_inset Formula $p'$
+\end_inset
+
+) model (
+\begin_inset Formula $p'<p$
+\end_inset
+
+).
+ The motivation for incremental estimation is the observation that per parameter
+, lower order models often have the largest contribution to the model fit.
+ The lower order models are expanded by adding a single random real root
+ (for 
+\begin_inset Formula $p'=p-1$
+\end_inset
+
+) or a conjugate pair of random complex roots (for 
+\begin_inset Formula $p'=p-2$
+\end_inset
+
+) to the lower order model.
+ An alternative for a this root initialization would be to use a large initial
+ value, as this corresponds to a model that is most similar to the lower-order
+ model.
+ However, this extreme initialization does not result in successful convergence
+ to a finite value during the numerical optimization.
+\end_layout
+
+\begin_layout Standard
+The second element is 
+\series bold
+initiation from autoregressive 
+\series default
+(AR) 
+\series bold
+models 
+\series default
+estimated from resampled data using the Burg estimator 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "percival2020spectral"
+literal "false"
+
+\end_inset
+
+.
+ Resampling is performed using nearest neighbor interpolation and linear
+ interpolation.
+ Intentionally, basic interpolation methods are used here, because more
+ advanced interpolation methods tend to produce artificially smooth signals,
+ or, in the frequency domain, a power spectrum with a very large dynamic
+ range.
+ This results in less accurate models, since the estimators attempts to
+ fit the artificially introduced low power spectral density at high frequencies,
+ at the expense of modeling the actual process dynamics 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "broersen2006automatic"
+literal "false"
+
+\end_inset
+
+.
+ AR roots that do not have a corresponding continuous-time root 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "soderstrom1991contarma"
+literal "false"
+
+\end_inset
+
+ are replaced by randomly generated roots.
+\end_layout
+
+\begin_layout Standard
+The usage of autoregressive models is similar to the methodology proposed
+ in 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "broersen2009spurious"
+literal "false"
+
+\end_inset
+
+ for reducing the variance in spectral estimates based on AR models.
+ However, our work is distinct in the following aspects: (i) we do not need
+ to introduce an arbitrary criterion to remove roots in the upper half of
+ the spectrum, which could eliminate true spectral peaks, and (ii) we only
+ use the AR model as an initial estimate, allowing further optimization
+ of the likelihood during numerical optimization.
+\end_layout
+
+\begin_layout Standard
+These main components are supplemented with purely random initialization
+ 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "kelly2014astronomy,goodfellow2016deep"
+literal "false"
+
+\end_inset
+
+ and a truncation phase that occurs after incremental estimation, where
+ successively lower model orders are initiated from the most significant
+ roots of higher order models.
+\end_layout
+
+\begin_layout Subsection
+Implementation
+\end_layout
+
+\begin_layout Standard
+The estimator is implemented in Julia 1.4, using 
+\begin_inset CommandInset href
+LatexCommand href
+name "Optim"
+target "https://julianlsolvers.github.io/Optim.jl/stable/"
+literal "false"
+
+\end_inset
+
+ 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "mogensen2018optim"
+literal "false"
+
+\end_inset
+
+ for L-BFGS optimization.
+ Gradients are computed with automatic differentiation using 
+\begin_inset CommandInset href
+LatexCommand href
+name "Zygote"
+target "https://fluxml.ai/Zygote.jl/latest/"
+literal "false"
+
+\end_inset
+
+ 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "innes2019zygote"
+literal "false"
+
+\end_inset
+
+.
+ Julia was selected for its combination of expressive syntax and execution
+ speed.
+ Zygote is a package for automatic differentiation that supports all functions
+ used in the likelihood computation, notably including the matrix exponential
+ 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "branvcik2008expadjoint"
+literal "false"
+
+\end_inset
+
+, and supports complex-valued parameters.
+ For reproducibility, the complete code for parameter estimation and data
+ generation is available at [
+\emph on
+provided after completion of anonymized review
+\emph default
+]
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+e.g.
+ https://github.com/sdewaele/EstimateSDE
+\end_layout
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Section
+\begin_inset CommandInset label
+LatexCommand label
+name "sec:simulations"
+
+\end_inset
+
+Design of experiments
+\end_layout
+
+\begin_layout Subsection
+\begin_inset CommandInset label
+LatexCommand label
+name "subsec:Test-processes"
+
+\end_inset
+
+Test processes
+\end_layout
+
+\begin_layout Standard
+The experiment is designed to cover the following process characteristics
+ that are challenging for parameter estimation from non-uniformly sampled
+ data:
+\end_layout
+
+\begin_layout Enumerate
+
+\series bold
+Overfit
+\series default
+: When the order of the estimated model matches the order that of the generating
+ process, accurate models can be estimated 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "broersen2007beyondrate"
+literal "false"
+
+\end_inset
+
+.
+ However, the additional flexibility of a higher order parameters can lead
+ to large errors, more so than the small statistical error that is observed
+ in parameter estimation from regularly sampled data.
+\end_layout
+
+\begin_layout Enumerate
+
+\series bold
+High dynamic range
+\series default
+: Estimation of the spectral density at frequencies where the true density
+ is low is challenging for many estimators, due to a phenomenon similar
+ to spectral leakage 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "bos2002autoregressive"
+literal "false"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Enumerate
+
+\series bold
+Spectral details beyond average sampling rate
+\series default
+: While asymptotic theory predicts alias-free estimates, capturing spectral
+ details at higher frequency remains challenging in practice, because limited
+ information high-frequency information is available in finite samples.
+\end_layout
+
+\begin_layout Enumerate
+
+\series bold
+Model misspecification
+\series default
+: Any estimation procedure should continue to work well when the actual
+ process cannot be described exactly using the estimated model structure.
+\end_layout
+
+\begin_layout Standard
+To cover these characteristics, we use the following test processes:
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+Case A
+\series default
+: SDE(1) process with parameter 
+\begin_inset Formula $a_{1}=-1/200$
+\end_inset
+
+.
+ Covariance function: 
+\begin_inset Formula $R\left(\tau\right)=\exp\left(a_{1}\tau\right)$
+\end_inset
+
+.
+ Addresses characteristics #1 and #2.
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+Case B
+\series default
+: Squared exponential covariance with scaling parameter 
+\begin_inset Formula $l=0.3$
+\end_inset
+
+ with added random noise with 
+\begin_inset Formula $\sigma_{w}=0.01$
+\end_inset
+
+.
+ Covariance: 
+\begin_inset Formula $R\left(\tau\right)=\exp\left(-\tau^{2}/l^{2}\right)+\sigma_{w}^{2}\delta\left(\tau\right)$
+\end_inset
+
+.
+ Addresses #2, #4.
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+Case C
+\series default
+: SDE(4) process with roots 
+\begin_inset Formula $\text{\left\{  -0.10\pm2π\cdot0.25i,-0.5\pm2π\cdot1.5im\right\}  }$
+\end_inset
+
+.
+ Addresses #1, #3.
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+White noise
+\series default
+: A temporally uncorrelated process.
+ Covariance function 
+\begin_inset Formula $R\left(\tau\right)=\delta\left(\tau\right)$
+\end_inset
+
+, where 
+\begin_inset Formula $\delta\left(0\right)=1$
+\end_inset
+
+, and 
+\begin_inset Formula $0$
+\end_inset
+
+ elsewhere.
+ Addresses: #1.
+\end_layout
+
+\begin_layout Standard
+Non-uniform sampling times are generated by drawing 
+\begin_inset Formula $N=200$
+\end_inset
+
+ time intervals from a Poisson distribution with average sampling interval
+ 
+\begin_inset Formula $T_{av}=1$
+\end_inset
+
+.
+ Samples 
+\begin_inset Formula $\mathbf{y}$
+\end_inset
+
+ from a process 
+\begin_inset Formula $P$
+\end_inset
+
+ are drawn for the resulting sampling times 
+\begin_inset Formula $\mathbf{t}$
+\end_inset
+
+.
+ In this way, 
+\begin_inset Formula $S=50$
+\end_inset
+
+ time series 
+\begin_inset Formula $\left\{ \mathbf{t},\mathbf{y}\right\} $
+\end_inset
+
+ are generated for each process.
+ For the simulated data, SDE(8) models are estimated.
+ The results of the simulation experiments are discussed in the subsequent
+ sections.
+\end_layout
+
+\begin_layout Subsection
+Kullback-Leibler Discrepancy
+\end_layout
+
+\begin_layout Standard
+Our objective is to accurately characterize the second-order moments of
+ a random process, which we quantify using the The Kullback-Leibler Discrepancy
+ (KLD).
+ The KLD has a number of desirable properties.
+ First, it has units that are statistically meaningful.
+ For an unbiased estimate of a 
+\begin_inset Formula $d$
+\end_inset
+
+-dimensional parameter 
+\begin_inset Formula $\theta$
+\end_inset
+
+ that achieves the Cramér-Rao lower bound, the expected value of the KLD
+ is asymptotically equal to 
+\begin_inset Formula $d/2$
+\end_inset
+
+: 
+\begin_inset Formula $\textrm{E}\left[D\left(\hat{\mathbf{\theta}}\mathbf{\Vert\mathbf{\theta}}\right)\right]=d/2$
+\end_inset
+
+.
+ For the SDE(
+\begin_inset Formula $p$
+\end_inset
+
+) model we estimate 
+\begin_inset Formula $p+1$
+\end_inset
+
+ parameters (adding 1 to 
+\begin_inset Formula $p$
+\end_inset
+
+ for estimation of 
+\begin_inset Formula $\sigma_{\epsilon}$
+\end_inset
+
+), yielding:
+\begin_inset Formula 
+\begin{equation}
+\textrm{E}\left[D\left(\hat{\mathbf{\theta}}\mathbf{\Vert\mathbf{\theta}}\right)\right]=\left(p+1\right)/2.\label{eq:expect-kld}
+\end{equation}
+
+\end_inset
+
+ A second desirable property is that, for time series models, the KLD is
+ asymptotically equivalent to the spectral distortion (Root Mean Square
+ Error (RMSE) of the log power spectrum) and the normalized one-step ahead
+ prediction error.
+ See e.g.
+ 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "broersen2006automatic"
+literal "false"
+
+\end_inset
+
+ for further background on these properties.
+\end_layout
+
+\begin_layout Standard
+The KLD for a zero-mean multivariate Gaussian model for a random vector
+ 
+\begin_inset Formula $\mathbf{y}$
+\end_inset
+
+ with covariance matrix 
+\begin_inset Formula $\hat{\Sigma}$
+\end_inset
+
+ with respect to the true zero-mean distribution with covariance matrix
+ 
+\begin_inset Formula $\Sigma$
+\end_inset
+
+ is given by:
+\begin_inset Formula 
+\begin{equation}
+D\left(\Sigma\Vert\hat{\Sigma}\right)=\frac{1}{2}\left(\mathrm{tr}\left(\hat{\Sigma}^{-1}\Sigma-I\right)-\log\text{\left(\left|\Sigma\right|/\hat{\left|\Sigma\right|}\right)}\right)\label{eq:kld}
+\end{equation}
+
+\end_inset
+
+For SDE models, 
+\begin_inset Formula $\mathbf{y}$
+\end_inset
+
+ is the vector of time series observations at times 
+\begin_inset Formula $\mathbf{t}$
+\end_inset
+
+.
+ The covariance matrix is computed using the covariance function from eq.
+ 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:autocov"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+ The choice of time steps 
+\begin_inset Formula $\mathbf{t}$
+\end_inset
+
+ determines the time scale at which we evaluate the process.
+\end_layout
+
+\begin_layout Standard
+One value for 
+\begin_inset Formula $\mathbf{t}$
+\end_inset
+
+ is the original time points of the dataset to which the estimated model
+ is fitted.
+ The resulting KLD is referred to as 
+\begin_inset Formula $D_{o}$
+\end_inset
+
+.
+ A second value for 
+\begin_inset Formula $\mathbf{t}$
+\end_inset
+
+ is a regularly spaced grid at interval 
+\begin_inset Formula $T$
+\end_inset
+
+, referred to as 
+\begin_inset Formula $D_{T}.$
+\end_inset
+
+ The value of 
+\begin_inset Formula $T$
+\end_inset
+
+ corresponds to the time scale of interest at which we evaluate the second
+ order moments.
+ In the frequency domain, the corresponds to evaluating the power spectrum
+ for frequencies up to the corresponding Nyquist frequency, 
+\begin_inset Formula $f=1/2T$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+The KLD does not suffer from some problems associated with some alternative
+ ways to evaluate estimates:
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+Look for the 
+\begin_inset Quotes eld
+\end_inset
+
+correct
+\begin_inset Quotes erd
+\end_inset
+
+ or 
+\begin_inset Quotes eld
+\end_inset
+
+actual
+\begin_inset Quotes erd
+\end_inset
+
+ order
+\series default
+: Practical processes typically cannot be described exactly by a finite
+ order model.
+ Even if such a finite order model would exist, estimating a model of this
+ order may not result in the most accurate estimate due to estimation errors.
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+RMSE of estimated SDE coefficients or autocovariance
+\series default
+:
+\series bold
+ 
+\series default
+A small change coefficients or autocovariance values can result in a completely
+ different process, e.g.
+ changing from stable to unstable (coefficients), or positive-definite (valid)
+ to not positive-definite (invalid) for autocovariances 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "rehfeld2011comparison"
+literal "false"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+The base implementation of the KLD is computationally expensive.
+ If required, a more efficient asymptotic expression can be derived specifically
+ for SDE models.
+ We do not elaborate on this here, because this computation is only used
+ to evaluate model performance in simulations.
+ It not part of the estimation algorithm, and so it will not increase computatio
+n times for the end user.
+ Furthermore, the generic expression allows evaluation of non-SDE processes
+ such as the squared exponential covariance function.
+\end_layout
+
+\begin_layout Section
+\begin_inset CommandInset label
+LatexCommand label
+name "sec:truncation"
+
+\end_inset
+
+Data-driven model truncation
+\end_layout
+
+\begin_layout Standard
+In this section we describe the phenomenon of parameter divergence in SDE
+ parameter estimation, and how it can be exploited to reduce the cost of
+ model overfit.
+\end_layout
+
+\begin_layout Subsection
+Model truncation for the SDE(1) model
+\end_layout
+
+\begin_layout Standard
+As parameters are optimized to maximize the likelihood, parameter estimates
+ can diverge to infinity, resulting in numerical problems in the likelihood
+ computation 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "jones1981fitcar"
+literal "false"
+
+\end_inset
+
+.
+ Also, it has been reported that not all AR models have a continuous-time
+ counterpart 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "soderstrom1991contarma"
+literal "false"
+
+\end_inset
+
+.
+ In this section, we show how these phenomena are closely related through
+ a theoretical analysis of the the SDE(1) model.
+ Furthermore, we show how this phenomenon ultimately results in more accurate
+ estimates.
+\end_layout
+
+\begin_layout Standard
+The SDE(1) model is an important model for many applications.
+ It is also known in the literature as the Ornstein-Uhlenbeck process and
+ is a special case of the Matérn kernel 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "rasmussen2003gaussian"
+literal "false"
+
+\end_inset
+
+.
+ For data regularly sampled at interval 
+\begin_inset Formula $T$
+\end_inset
+
+, the maximum likelihood estimate of the SDE(1) parameter 
+\begin_inset Formula $\hat{a}$
+\end_inset
+
+ can be computed analytically 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "sarkka2019sde"
+literal "false"
+
+\end_inset
+
+:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\hat{a}=\frac{1}{T}\log\left[\hat{\alpha}\right]
+\]
+
+\end_inset
+
+where 
+\begin_inset Formula $\hat{\alpha}$
+\end_inset
+
+ is the estimated AR(1) parameter.
+ For a white noise process, the estimated AR(1) parameter is distributed
+ symmetrically around 
+\begin_inset Formula $\hat{\alpha}=0$
+\end_inset
+
+ with standard deviation 
+\begin_inset Formula $1/\sqrt{N}$
+\end_inset
+
+, where 
+\begin_inset Formula $N$
+\end_inset
+
+ is the number of observations 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "priestley1981spectral"
+literal "false"
+
+\end_inset
+
+.
+ Hence, 
+\begin_inset Formula $\hat{\alpha}$
+\end_inset
+
+ is negative for 50% of signals.
+ In this case, the AR(1) process has no continuous-time counterpart.
+\end_layout
+
+\begin_layout Standard
+It can be shown that, under these conditions, the likelihood monotonically
+ increases for 
+\begin_inset Formula $a\rightarrow\infty$
+\end_inset
+
+.
+ In this limit, the SDE(1) model is equivalent to the white noise model.
+ In practice, the true model order is unknown, and so it is critical that
+ an estimator returns an accurate estimate under these circumstances.
+ This is achieved using data-driven model truncation.
+ With model trunction, the estimation algorithm for an SDE(
+\begin_inset Formula $p$
+\end_inset
+
+) model can return a lower SDE(
+\begin_inset Formula $p'$
+\end_inset
+
+) model if the likelihood indicates that the lower order model fits better
+ to the data.
+ For the SDE(1) case, this amounts in returning an SDE(0) or white noise
+ model when 
+\begin_inset Formula $\hat{\alpha}<0$
+\end_inset
+
+.
+ We discuss model truncation for higher order models in the next section.
+\end_layout
+
+\begin_layout Subsection
+Model truncation for higher order models
+\end_layout
+
+\begin_layout Standard
+As described in section 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "subsec:Initialization"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+, SDE(
+\begin_inset Formula $p$
+\end_inset
+
+) models are estimated incrementally.
+ If parameter divergence occurs, the model returned by the optimization
+ procedure has large but finite values because of the limits introduced
+ on parameter values.
+ In this case, the lower order model will have a larger likelihood, and
+ is consequently the final maximum likelihood estimate.
+ While this phenomena can be easily analyzed for the SDE(1) model estimated
+ from white noise, this is an important phenomena more generally, as it
+ occurs whenever the order of the estimated model is greater than the true
+ model order.
+ Since the true model order is unknown for experimental data, it is desirable
+ to estimate a high order model, so that a wide range of processes can be
+ represented.
+ Model truncation reduces the cost of overfit, i.e., the statistical estimation
+ error induced by estimation SDE(
+\begin_inset Formula $p$
+\end_inset
+
+) models where 
+\begin_inset Formula $p$
+\end_inset
+
+ exceeds the true model order.
+\end_layout
+
+\begin_layout Subsection
+KLD reduction achieved in white noise
+\end_layout
+
+\begin_layout Standard
+Adding to the theoretical analysis of the SDE(1) case, we quantify the improveme
+nt that is achieved with data-driven model truncation in a simulation experiment
+ where SDE models are estimated from a non-uniformly sampled white noise
+ process.
+ The Kullback-Leibler discrepancy 
+\begin_inset Formula $D_{o}$
+\end_inset
+
+ as a function of model order is given in figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:whitenoise"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+, along with the theoretical expected value for the KLD 
+\begin_inset Formula $D_{o}$
+\end_inset
+
+ from eq 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:expect-kld"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+ We use 
+\begin_inset Formula $D_{o}$
+\end_inset
+
+ here, because it uses the same time vector 
+\begin_inset Formula $\mathbf{t}$
+\end_inset
+
+ as the likelihood.
+ Therefore, we can use the theoretical expectation (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:expect-kld"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+).
+\end_layout
+
+\begin_layout Standard
+As expected, we observe a significant reduction in the error for higher
+ order models due to model truncation.
+ Because the theoretical expression is accurate for the discrete-time AR
+ models, these results also quantify the error reduction compared to AR
+ models.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename figures/whitenoise.pdf
+	width 100col%
+
+\end_inset
+
+
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:whitenoise"
+
+\end_inset
+
+Kullback-Leibler Discrepancy (KLD) 
+\begin_inset Formula $D_{o}$
+\end_inset
+
+ as a function of SDE model order 
+\begin_inset Formula $p$
+\end_inset
+
+ estimated from non-uniformly sampled white noise.
+ Because of data-driven model truncation, the KLD observed in simulation
+ experiments for estimated SDE(
+\begin_inset Formula $p$
+\end_inset
+
+) models is below the theoretical prediction for the KLD.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+\begin_inset CommandInset label
+LatexCommand label
+name "sec:performance"
+
+\end_inset
+
+Estimator performance
+\end_layout
+
+\begin_layout Standard
+In this section, we discuss estimator performance across the test cases
+ A, B and C introduced in section 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sec:simulations"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+ Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:mle-accuracy"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ shows the average KLD at interval 
+\begin_inset Formula $T=0.2$
+\end_inset
+
+, 
+\begin_inset Formula $D_{0.2}$
+\end_inset
+
+, as well as sample spectral estimates compared to the true spectrum up
+ to the Nyquist frequency corresponding to the KLD interval: 
+\begin_inset Formula $f=1/2T=2.5$
+\end_inset
+
+.
+ Note that we use a KLD at a time interval 
+\begin_inset Formula $T$
+\end_inset
+
+ that is considerably shorter than the average sampling interval 
+\begin_inset Formula $T_{av}=1$
+\end_inset
+
+.
+ This allows us to quantify the estimator capability to characterize the
+ process at short time scales, or, in the frequency domain, up to frequencies
+ beyond the Nyquist rate corresponding the the average sampling time: 
+\begin_inset Formula $f_{N,Tav}=0.5$
+\end_inset
+
+.
+ Estimates are shown for the SDE(8) ML estimate obtained using the roots
+ parameterization (
+\begin_inset Formula $\mathbf{r}$
+\end_inset
+
+), referred to as the 
+\begin_inset Quotes eld
+\end_inset
+
+MLE root
+\begin_inset Quotes erd
+\end_inset
+
+ estimate.
+\end_layout
+
+\begin_layout Standard
+We conclude that this estimator reliably estimates the power spectrum for
+ the test processes, which cover all of the challenging conditions listed
+ in section 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "subsec:Test-processes"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+ Accurate estimates can be obtained well above 
+\begin_inset Formula $f_{N,Tav}$
+\end_inset
+
+.
+ The squared exponential case is the most challenging case, because of the
+ joint occurrence of model misfit and a high dynamic range.
+ For this case, estimates are less accurate across the entire frequency
+ range because of statistical estimation errors.
+\end_layout
+
+\begin_layout Standard
+We specifically draw attention to the absence of large erroneous peaks in
+ the spectral estimates, as they have been reported previously in the literature
+, including a study of the autoregressive (AR) ML estimator for similar
+ test cases 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "dewaele2018kernel"
+literal "false"
+
+\end_inset
+
+.
+ The absence of these peaks in the SDE estimate is a consequence of the
+ data-driven model truncation introduced in section 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sec:truncation"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+, and results in substantially more accurate spectral estimates.
+ Compared to 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "dewaele2018kernel"
+literal "false"
+
+\end_inset
+
+, the model accuracy is much improved for cases A and B.
+ Only in case C, the AR ML estimate in 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "dewaele2018kernel"
+literal "false"
+
+\end_inset
+
+ is more accurate.
+ However, for this case, a model of the true order (AR(4)) was estimated
+ instead of an AR(8) model, explaining the absence of erroneous peaks.
+ In general, we cannot assume knowledge of the true model order of the generatin
+g process for a given experimental dataset.
+\end_layout
+
+\begin_layout Standard
+Given the remarkable success in suppressing erroneous peaks compared to
+ previous work, the relevance of case C is to show the capability of the
+ estimator to accurately estimate true spectral peaks at a high frequency.
+ Here, our work has a key advantage over the algorithm proposed in 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "broersen2009spurious"
+literal "false"
+
+\end_inset
+
+, in which 
+\emph on
+all
+\emph default
+ high frequency AR roots are eliminated.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename figures/mle-accuracy.pdf
+	width 100col%
+
+\end_inset
+
+
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:mle-accuracy"
+
+\end_inset
+
+Accuracy of SDE(8) models estimated from simulated data, sampled non-uniformly
+ at an average sampling time of 
+\begin_inset Formula $T_{av}=1$
+\end_inset
+
+ (
+\begin_inset Formula $S=50$
+\end_inset
+
+ simulation runs for each case A, B and C).
+
+\series bold
+ Left top:
+\series default
+ Kullback-Leibler Discrepancy at time interval 
+\begin_inset Formula $T=0.2$
+\end_inset
+
+ (
+\begin_inset Formula $D_{0.2}$
+\end_inset
+
+), averaged over all simulation runs.
+ 
+\series bold
+Remaining graphs: 
+\series default
+Representative sample spectral estimates computed from the SDE(8) estimates,
+ compared to the true power spectrum up a frequency of 
+\begin_inset Formula $1/2T=2.5$
+\end_inset
+
+.
+ Accurate estimates are achieved across the entire frequency range, going
+ well beyond the Nyquist frequency for the average sampling interval 
+\begin_inset Formula $f_{N,Tav}=0.5$
+\end_inset
+
+, which is indicated by the black dashed line.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:cmp-estimators"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ compares the accuracy of the 
+\begin_inset Quotes eld
+\end_inset
+
+MLE root
+\begin_inset Quotes erd
+\end_inset
+
+ estimator to two alternative estimators: the coefficient parameterization
+ 
+\begin_inset Quotes eld
+\end_inset
+
+MLE coef
+\begin_inset Quotes erd
+\end_inset
+
+ and random root initiation (
+\begin_inset Quotes eld
+\end_inset
+
+random init root
+\begin_inset Quotes erd
+\end_inset
+
+).
+ While all estimators perform well for the basic SDE(1) case A, the 
+\begin_inset Quotes eld
+\end_inset
+
+MLE coef
+\begin_inset Quotes erd
+\end_inset
+
+ and 
+\begin_inset Quotes eld
+\end_inset
+
+random init root
+\begin_inset Quotes erd
+\end_inset
+
+ estimators have reduced quality for the more complex cases B and C, that
+ require accurate higher order SDE estimates for accurate results.
+\end_layout
+
+\begin_layout Standard
+For the 
+\begin_inset Quotes eld
+\end_inset
+
+MLE coef
+\begin_inset Quotes erd
+\end_inset
+
+ estimator, the reduced quality can be explained from the fact that the
+ likelihood computation is less numerically stable.
+ Also, for models of order 
+\begin_inset Formula $p>3$
+\end_inset
+
+, the search space of positive coefficients also contains non-stationary
+ models.
+ The performance degradation is greatest for the 
+\begin_inset Quotes eld
+\end_inset
+
+random init root
+\begin_inset Quotes erd
+\end_inset
+
+ estimator, with an increase of a factor of 4 case C.
+ While random initiation converges to a good solution for many simulations,
+ it occasionally fails to find a good optimum resulting in a very large
+ error.
+ This performance degradation is expected to increase further with increasing
+ model order.
+ 
+\begin_inset Float figure
+placement htbp
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename figures/cmp-estimators.pdf
+	width 100col%
+
+\end_inset
+
+
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:cmp-estimators"
+
+\end_inset
+
+Comparison of the estimation accuracy of 3 alternative SDE parameter estimators.
+ The reported values are the Kullback-Leibler Discrepancy 
+\begin_inset Formula $D_{0.2}$
+\end_inset
+
+ relative to the 
+\begin_inset Quotes eld
+\end_inset
+
+MLE root
+\begin_inset Quotes erd
+\end_inset
+
+ estimate.
+ 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+\begin_inset CommandInset label
+LatexCommand label
+name "sec:rainfall"
+
+\end_inset
+
+Analysis of monsoon rainfall variability
+\end_layout
+
+\begin_layout Standard
+Long-term variability in monsoon rainfall is studied using radiometric-dated,
+ speleothem oxygen isotope 
+\begin_inset Formula $\delta^{18}O$
+\end_inset
+
+ records 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "sinha2015trends"
+literal "true"
+
+\end_inset
+
+.
+ The data is intrinsically irregularly sampled, because it is formed by
+ natural deposition rather than experimenter controlled sampling.
+ For the same reason, irregular sampling occurs for many other long-term
+ climate records as well, e.g.
+ ice core data 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "petit1999climate"
+literal "true"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+The average sampling rate of speleothem data depends on the measurement
+ location.
+ The current dataset is suitable for algorithm benchmarking because it has
+ a higher average sampling rate than datasets collected from other locations.
+ This allows us to study algorithm performance for different sampling rates,
+ by subsampling the original data, and comparing the results to estimates
+ obtained from the full dataset.
+ Also, the dataset is publicly available as supplementary material to 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "sinha2015trends"
+literal "true"
+
+\end_inset
+
+ for reproducibility of results.
+ The oxygen isotope data consists of 
+\begin_inset Formula $N=1848$
+\end_inset
+
+ irregularly sampled observations of 
+\begin_inset Formula $\delta^{18}O$
+\end_inset
+
+ anomalies over a time span of 
+\begin_inset Formula $2147$
+\end_inset
+
+ years, resulting in average sampling interval of 
+\begin_inset Formula $T_{0}=1.16$
+\end_inset
+
+ years.
+\end_layout
+
+\begin_layout Standard
+We estimate SDE(8) models from detrended 
+\begin_inset Formula $\delta^{18}O$
+\end_inset
+
+ data.
+ A reference estimate is obtained using the complete dataset.
+ To emulate a lower sampling rate, we then estimate models from 
+\begin_inset Formula $5$
+\end_inset
+
+ random subsets of the original data, at an average sampling interval of
+ 
+\begin_inset Formula $T_{av}=5$
+\end_inset
+
+ years.
+ The resulting estimated spectra and model fit are given in figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:monsoon-psd"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+ The reference SDE(8) model is truncated to an SDE(1) model.
+ Models estimated from the subsampled data similarly exploit model truncation
+ to achieve accurate spectral estimates, avoiding erroneous peaks in the
+ estimate, despite a much lower sampling frequency compared to the full
+ dataset.
+ The maximum likelihood is achieved at either order 
+\begin_inset Formula $p=1$
+\end_inset
+
+ (4 out of 5 subsets) or 
+\begin_inset Formula $p=5$
+\end_inset
+
+ (1/5) (see figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:monsoon-psd"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+, bottom).
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename figures/rainfall-results.pdf
+	width 100col%
+
+\end_inset
+
+
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:monsoon-psd"
+
+\end_inset
+
+
+\series bold
+Top:
+\series default
+ Power spectra estimated from detrended speleothem oxygen isotope 
+\begin_inset Formula $\delta^{18}O$
+\end_inset
+
+ data using SDE(8) estimates.
+ Estimates are based either on all data (black dashed line), or on subsets
+ of data (colored lines) that are randomly subsampled at an average sampling
+ interval 
+\begin_inset Formula $T=5$
+\end_inset
+
+ years.
+ While based on a much smaller dataset, the estimates from subsampled data
+ remain accurate.
+ 
+\series bold
+Bottom
+\series default
+: Model fit (negative log likelihood 
+\begin_inset Formula $L$
+\end_inset
+
+) as a function of model order for the models estimated from subsampled
+ data, with colors corresponding to the same subsets as in the top spectrum
+ plots.
+ The yellow diamond indicates the order of the ML estimate after data-driven
+ model truncation.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+\begin_inset CommandInset label
+LatexCommand label
+name "sec:conclusions"
+
+\end_inset
+
+Concluding remarks
+\end_layout
+
+\begin_layout Standard
+The proposed SDE-based method for spectral estimation from non-uniformly
+ sampled data provides a more accurate estimate than existing methods.
+ This is achieved using more accurate initialization combined with data-driven
+ model truncation.
+ We have shown the performance of this estimator in simulation experiments,
+ and by application of the algorithm to experimental rainfall variability
+ data.
+\end_layout
+
+\begin_layout Standard
+Further advances can be achieved through model regularization.
+ One way to achieve regularization is by means of order selection.
+ Novel order selection criteria can be developed based on the reported behavior
+ of SDE estimators in figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:whitenoise"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+ This behavior deviates significantly from the theoretical behavior on which
+ criteria such as the Akaike Information Criterion are based.
+\end_layout
+
+\begin_layout Standard
+Alternatively, regularization can be achieved by introducing informative
+ priors in a Bayesian approach.
+ This has shown promise in discrete time estimation, albeit at the cost
+ of a considerably higher computational load 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "dewaele2018kernel"
+literal "false"
+
+\end_inset
+
+.
+ Given the results in ML estimation, we expect that a continuous-time model
+ will also produce superior results for Bayesian estimation.
+\end_layout
+
+\begin_layout Standard
+An additional benefit of a Bayesian approach is that it has the flexibility
+ to produce a posterior summary that is relevant to a particular quantity
+ of interest.
+ This may be exploited to produce an accurate spectral estimate for a frequency
+ range of interest, independent of the (average) sampling frequency.
+ To accommodate Bayesian inference, the code accompanying this paper can
+ compute posterior samples for the SDE model parameters using Hamiltonian
+ Monte Carlo sampling.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+Remember though that your final submission is supposed to have all the bibliogra
+phy entries embedded in the \SpecialChar LaTeX
+-file.
+ This means you eventually have to copy the .bbl file into the latex file
+ and remove the bibtex lines.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset bibtex
+LatexCommand bibtex
+btprint "btPrintAll"
+bibfiles "references"
+options "IEEEtran"
+
+\end_inset
+
+
+\end_layout
+
+\end_body
+\end_document
