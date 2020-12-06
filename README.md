@@ -21,10 +21,11 @@ variability data.
 ## Citation
 You can cite this paper as:
 ```
-@article{dewaele2020charsde,
+@inproceedings{dewaele2020charsde,
   title={Accurate Characterization of Non-Uniformly Sampled Time Series using Stochastic Differential Equations},
-  author={de Waele, Stijn},
-  journal={arXiv preprint arXiv:2007.01073},
-  year={2020}
+  author={De Waele, Stijn},
+  booktitle={accepted for the 19th IEEE International Conference On Machine Learning And Applications (ICMLA)},
+  year={2020},
+  organization={IEEE}
 }
 ```
