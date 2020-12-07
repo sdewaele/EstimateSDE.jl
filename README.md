@@ -24,7 +24,7 @@ You can cite this paper as:
 @inproceedings{dewaele2020charsde,
   title={Accurate Characterization of Non-Uniformly Sampled Time Series using Stochastic Differential Equations},
   author={De Waele, Stijn},
-  booktitle={accepted for the 19th IEEE International Conference On Machine Learning and Applications (ICMLA)},
+  booktitle={accepted for the 19th IEEE International Conference on Machine Learning and Applications (ICMLA)},
   year={2020},
   organization={IEEE}
 }
